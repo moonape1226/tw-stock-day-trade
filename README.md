@@ -43,6 +43,34 @@ Ctrl+C
 
 ---
 
+## Docker 部署（server 常駐）
+
+paper 資料閉環需要三支程式：`baseline.py`（盤前每日一次）、`watch.py`（盤中常駐）、`track.py`（盤中常駐）。docker compose 把三者包成常駐服務，盤外自動 idle、crash 自動重啟，產出的 csv/json 留在專案目錄。
+
+```bash
+# 專案目錄需有 .env (FINMIND_API=...) 與 config.json
+docker compose up -d --build
+
+docker compose logs -f track       # 出場 / 損益 (trades_closed.csv)
+docker compose logs -f baseline    # 每日量能基準刷新
+docker compose ps                  # 三服務狀態
+docker compose down                # 停止
+```
+
+| 服務 | 跑法 | 產出 |
+|------|------|------|
+| `baseline` | 啟動跑一次 + 每天 08:30 刷新 | `avg20_vol.json`（RVOL/ATR 基準）|
+| `watch` | 整天常駐（盤外 idle） | `paper_trades.csv`（進場訊號）|
+| `track` | 整天常駐 | `trades_closed.csv`（gross / net R）|
+
+- 三支都 bind-mount 專案目錄，重啟資料不遺失（`opening_range.json` / `open_positions.json` 還原盤中狀態）。
+- 容器時區固定 `Asia/Taipei`；程式內部用 +8 偏移常數，與容器時區無關。
+- `watch` 的 log 是會清屏的面板畫面，看資料以 `trades_closed.csv` 為準。
+- 容器以 root 寫檔，產出檔在 host 會是 root 擁有；介意的話在 compose 各服務加 `user: "1000:1000"`。
+- `baseline` 抓不到日線的標的（如上櫃）會略過，`watch` 對該檔自動 fallback FinMind volume_ratio。
+
+---
+
 ## 面板說明
 
 ### 畫面範例

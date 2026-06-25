@@ -735,6 +735,8 @@ def main():
                 last_date = today
 
             if market_open() or first:
+                if not _vol_baseline:           # 盤前 baseline.py 較晚才產出 → 盤中補載一次
+                    _vol_baseline = load_baseline(today)
                 idx_snap = fetch_snapshot(idx_sym)
                 if idx_snap:
                     prev_idx = _prev_snapshots.get(idx_sym)

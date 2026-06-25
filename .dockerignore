@@ -1,0 +1,10 @@
+.git
+__pycache__/
+*.pyc
+.cache/
+.env
+paper_trades.csv
+trades_closed.csv
+open_positions.json
+opening_range.json
+avg20_vol.json

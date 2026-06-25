@@ -1,0 +1,47 @@
+# 台股當沖 paper 資料閉環 — 三服務常駐
+#   baseline: 盤前每日刷新量能/ATR 基準 (avg20_vol.json)
+#   watch:    盤中產生進場訊號 + paper_trades.csv (盤外自動 idle)
+#   track:    盤中追出場 + trades_closed.csv (gross / net R)
+# bind-mount 整個專案目錄: 程式、config.json、.env、產出的 csv/json 都留在 host,
+# 容器只提供 Python runtime 與排程,重啟資料不遺失。
+#
+# 用法:
+#   1. 在專案目錄放好 .env (FINMIND_API=...) 與 config.json
+#   2. docker compose up -d --build
+#   3. docker compose logs -f track      # 看出場/損益
+#      docker compose logs -f baseline    # 看每日基準刷新
+
+services:
+  baseline:
+    build: .
+    image: tw-stock-day-trade:latest
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - .:/app
+    command: ["sh", "docker/run-baseline.sh"]
+    restart: unless-stopped
+
+  watch:
+    image: tw-stock-day-trade:latest
+    build: .
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - .:/app
+    command: ["python3", "watch.py"]
+    restart: unless-stopped
+    depends_on:
+      - baseline
+
+  track:
+    image: tw-stock-day-trade:latest
+    build: .
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - .:/app
+    command: ["python3", "track.py"]
+    restart: unless-stopped
+    depends_on:
+      - watch
