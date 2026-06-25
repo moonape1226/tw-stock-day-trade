@@ -544,7 +544,10 @@ def fmt_age(d, now):
         return "?"
 
 def render(results, idx, cfg, ft, cycle, errs):
-    os.system("cls" if os.name == "nt" else "clear")
+    if os.name == "nt":
+        os.system("cls")   # 固定字串常數,非外部輸入,無注入風險
+    else:
+        print("\033[H\033[J", end="")   # ANSI 清屏: 容器/無 clear 指令環境也適用
     now = datetime.now(TZ)
     W = INNER_W
     TL, TR, BL, BR = "+", "+", "+", "+"

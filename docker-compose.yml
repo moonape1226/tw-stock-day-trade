@@ -27,10 +27,13 @@ services:
     build: .
     environment:
       - TZ=Asia/Taipei
+      - TERM=xterm
     volumes:
       - .:/app
     command: ["python3", "watch.py"]
     restart: unless-stopped
+    tty: true            # 配合 ANSI 清屏, 讓 `docker compose attach watch` 能乾淨顯示面板
+    stdin_open: true
     depends_on:
       - baseline
 
