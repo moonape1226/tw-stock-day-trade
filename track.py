@@ -211,6 +211,17 @@ def main():
     refresh = load_refresh()
     last_date = None
     positions, seen = {}, set()
+
+    # 啟動自我檢查: 真打一次 FinMind, 讓 docker logs 一眼確認 token/連線
+    if not FM_TOKEN:
+        print("[track] startup: 找不到 FINMIND_API token (.env) — 出場追蹤將失敗", flush=True)
+    else:
+        _p = fetch_price("2330")
+        if _p:
+            print(f"[track] startup: FinMind token OK (2330 close={_p['p']:.1f} ts={_p['ts']})", flush=True)
+        else:
+            print(f"[track] startup: FinMind token/連線 FAIL — {_last_error}", flush=True)
+
     try:
         while True:
             now = datetime.now(TZ)

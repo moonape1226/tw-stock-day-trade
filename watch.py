@@ -716,6 +716,17 @@ def main():
     results = {}; idx_data = None; first = True; errs = 0
     idx_sym = cfg["index"]["symbol"]
 
+    # 啟動自我檢查: 真打一次 FinMind, 讓 docker logs 一眼確認 token/連線 (不分盤中盤外)
+    probe_sym = cfg["stocks"][0]["symbol"] if cfg.get("stocks") else "2330"
+    if not FM_TOKEN:
+        print("[watch] startup: 找不到 FINMIND_API token (.env) — 即時資料將失敗", flush=True)
+    else:
+        _p = fetch_snapshot(probe_sym)
+        if _p:
+            print(f"[watch] startup: FinMind token OK ({probe_sym} close={_p['p']:.1f} ts={_p['ts']})", flush=True)
+        else:
+            print(f"[watch] startup: FinMind token/連線 FAIL — {_last_error}", flush=True)
+
     try:
         cycle = 0
         last_date = None
