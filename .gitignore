@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.DS_Store
+paper_trades.csv
+trades_closed.csv
+open_positions.json
+avg20_vol.json
+opening_range.json
+.claude/
+.cache/

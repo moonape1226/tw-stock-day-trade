@@ -1,0 +1,22 @@
+{
+  "refresh_seconds": 30,
+  "stocks": [
+    {"symbol": "2408", "name": "南亞科"},
+    {"symbol": "2344", "name": "華邦電"},
+    {"symbol": "1301", "name": "台塑"},
+    {"symbol": "2316", "name": "楠梓電"},
+    {"symbol": "6271", "name": "同欣電"}
+  ],
+  "index": {
+    "symbol": "001",
+    "name": "加權指數"
+  },
+  "strategy": {
+    "breakout_volume_ratio": 1.5,
+    "pullback_vwap_range_pct": 0.5,
+    "pullback_volume_ratio": 0.7,
+    "index_vwap_required": true,
+    "brk_confirm_bars": 2,
+    "max_risk_pct": 4.0
+  }
+}
