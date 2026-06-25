@@ -91,7 +91,7 @@ def stock_day(code, ym):
             if None in (vol, tv, o, h, l, c):
                 continue
             out.append([r[0], vol / 1000.0, tv, o, h, l, c])   # vol → 張
-    if not is_cur:
+    if not is_cur and out:   # 空結果不快取: 避免 prev_ym 抓取失敗被永久毒化(再也不重試)
         cf.write_text(json.dumps(out))
     time.sleep(0.25)   # 對 TWSE 客氣一點
     return out
