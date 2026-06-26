@@ -7,5 +7,7 @@ trades_closed.csv
 open_positions.json
 avg20_vol.json
 opening_range.json
+config.json.bak
+watchlist-cron.log
 .claude/
 .cache/
