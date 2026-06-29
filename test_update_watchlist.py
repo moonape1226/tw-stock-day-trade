@@ -4,8 +4,8 @@ import unittest
 from update_watchlist import select_stocks, build_new_config
 
 
-def cand(code, bucket):
-    return {"code": code, "name": f"N{code}", "bucket": bucket}
+def cand(code, bucket, z=100.0):
+    return {"code": code, "name": f"N{code}", "bucket": bucket, "z": z}
 
 
 class TestSelectStocks(unittest.TestCase):
@@ -25,8 +25,21 @@ class TestSelectStocks(unittest.TestCase):
         self.assertEqual(len(out), 2)
 
     def test_maps_code_and_name_to_symbol(self):
-        out = select_stocks([{"code": "2330", "name": "台積電", "bucket": "A"}], target=5)
+        out = select_stocks([{"code": "2330", "name": "台積電", "bucket": "A", "z": 480.0}], target=5)
         self.assertEqual(out, [{"symbol": "2330", "name": "台積電"}])
+
+    def test_excludes_price_above_ceiling(self):
+        cands = [cand("A0", "A", z=975.0), cand("A1", "A", z=480.0), cand("B0", "B", z=600.0)]
+        out = select_stocks(cands, target=5, price_max=500)
+        self.assertEqual([s["symbol"] for s in out], ["A1"])
+
+    def test_keeps_price_equal_to_ceiling(self):
+        out = select_stocks([cand("A0", "A", z=500.0)], target=5, price_max=500)
+        self.assertEqual([s["symbol"] for s in out], ["A0"])
+
+    def test_excludes_bad_price_zero(self):
+        out = select_stocks([cand("A0", "A", z=0.0)], target=5, price_max=500)
+        self.assertEqual(out, [])
 
 
 class TestBuildNewConfig(unittest.TestCase):

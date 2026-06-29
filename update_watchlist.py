@@ -4,7 +4,7 @@
 
 於容器內由 cron-update-watchlist.sh 觸發。流程:
   1. subprocess 跑 `screen_v2.py --json` 取候選 (已排序 A→B→C, 去除 D)
-  2. 取 bucket A 優先、不足用 B 補, 共 TARGET 檔
+  2. 取 bucket A 優先、不足用 B 補, 共 TARGET 檔 (排除收盤價 > PRICE_MAX)
   3. 選到 < FLOOR 檔 → 中止 (退出碼 2), 不寫檔、保留舊 config
   4. 備份 config.json → config.json.bak, 只換 stocks (保留 index/strategy)
 
@@ -21,16 +21,18 @@ CONFIG = SCRIPT_DIR / "config.json"
 BACKUP = SCRIPT_DIR / "config.json.bak"
 SCREEN = SCRIPT_DIR / "screen_v2.py"
 
-TARGET = 5   # 目標檔數
-FLOOR = 3    # 少於此數即中止
+TARGET = 5       # 目標檔數
+FLOOR = 3        # 少於此數即中止
+PRICE_MAX = 500  # 只選收盤價 <= 此值的標的 (低價可當沖)
 
 
-def select_stocks(candidates, target=TARGET):
-    """從 screen 候選取 bucket A 優先、再 B, 共 target 檔。回傳 [{symbol, name}]。"""
+def select_stocks(candidates, target=TARGET, price_max=PRICE_MAX):
+    """從 screen 候選取 bucket A 優先、再 B, 共 target 檔; 排除收盤價 > price_max。
+    回傳 [{symbol, name}]。"""
     picked = []
     for bucket in ("A", "B"):
         for c in candidates:
-            if c.get("bucket") == bucket:
+            if c.get("bucket") == bucket and 0 < c.get("z", 0) <= price_max:
                 picked.append({"symbol": c["code"], "name": c["name"]})
                 if len(picked) >= target:
                     return picked
