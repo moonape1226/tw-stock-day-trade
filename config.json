@@ -1,5 +1,5 @@
 {
-  "refresh_seconds": 30,
+  "refresh_seconds": 15,
   "stocks": [
     {"symbol": "2408", "name": "南亞科"},
     {"symbol": "2344", "name": "華邦電"},
