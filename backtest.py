@@ -115,6 +115,7 @@ def main():
 
     # 收集所有 stock-day
     by_bucket = {"A": [], "B": [], "C": [], "D": []}
+    by_regime = {"A_above": [], "A_below": [], "all_above": [], "all_below": []}
     all_rows = []
     per_day = {}   # date -> list of (v1_eligible, v1_score, v2_bucket, v2_score, outcome)
     for n, u in enumerate(uni, 1):
@@ -126,6 +127,7 @@ def main():
             prevC = h[i - 1][4]
             _, o, hi, lo, c, vol, money = h[i]
             base = h[i - 20:i]
+            ma20 = sum(r[4] for r in base) / 20   # 20 日收盤均線 (排除當日,與 screen_v2 對齊)
             avg20_vol = sum(r[5] for r in base) / 20
             avg20_tv = sum(r[6] for r in base) / 20
             trs = []
@@ -143,6 +145,9 @@ def main():
             outcome = (ret, mfe, mae, ret > COST)
             by_bucket[bkt].append(outcome)
             all_rows.append(outcome)
+            (by_regime["all_above"] if c >= ma20 else by_regime["all_below"]).append(outcome)
+            if bkt == "A":
+                (by_regime["A_above"] if c >= ma20 else by_regime["A_below"]).append(outcome)
             per_day.setdefault(h[i][0], []).append((v1e, v1s, bkt, v2s, outcome))
 
     print(f"\n=== 全體基準 (籃子所有 stock-day) ===\n  {agg(all_rows)}")
@@ -170,6 +175,17 @@ def main():
     print(f"  A 桶 ret {a_ret:+.2f}% vs 全體 {base_ret:+.2f}% → {'A 勝基準' if a_ret > base_ret else 'A 未勝基準'}")
     print(f"  v2A top{K} ret {meanret(v2A_topk):+.2f}% / win {winrate(v2A_topk):.0f}%  vs  "
           f"v1 top{K} ret {meanret(v1_topk):+.2f}% / win {winrate(v1_topk):.0f}%")
+
+    print("\n=== MA20 順勢過濾驗證 (signal 日收盤 z vs MA20) ===")
+    print(f"  全體 above MA20: {agg(by_regime['all_above'])}")
+    print(f"  全體 below MA20: {agg(by_regime['all_below'])}")
+    print(f"  A 桶 above MA20: {agg(by_regime['A_above'])}")
+    print(f"  A 桶 below MA20: {agg(by_regime['A_below'])}")
+    aa, ab = meanret(by_regime["A_above"]), meanret(by_regime["A_below"])
+    wa, wb = winrate(by_regime["A_above"]), winrate(by_regime["A_below"])
+    has_edge = (aa - ab > 0.1) and (wa - wb > 1)
+    print(f"  → A 桶 above−below: ret 差 {aa - ab:+.2f}% / win 差 {wa - wb:+.0f}%  → "
+          f"{'below 較差,過濾有 edge → 可加 z>=MA20 gate' if has_edge else 'edge 不足或反向 → 不建議加 MA20 過濾'}")
     print("\n注意: 日線解析度、隔日開盤進場、無滑價、籃子存活者偏誤、樣本有限——僅供方向性參考,非實盤期望值。")
 
 
