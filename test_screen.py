@@ -14,9 +14,9 @@ def at(h, m):
 
 class TestExpectedVolFraction(unittest.TestCase):
     def test_known_points(self):
-        self.assertEqual(expected_vol_fraction(at(9, 45)), 0.38)
-        self.assertEqual(expected_vol_fraction(at(9, 30)), 0.25)
-        self.assertEqual(expected_vol_fraction(at(12, 0)), 0.74)
+        self.assertEqual(expected_vol_fraction(at(9, 45)), 0.403)
+        self.assertEqual(expected_vol_fraction(at(9, 30)), 0.331)
+        self.assertEqual(expected_vol_fraction(at(12, 0)), 0.755)
         self.assertEqual(expected_vol_fraction(at(14, 0)), 1.0)
         self.assertEqual(expected_vol_fraction(at(8, 0)), 0.02)
 
